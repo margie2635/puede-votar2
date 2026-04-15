@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>¿Puede votar?</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f4f4f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 1.75rem;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 1.5rem;
+    }
+
+    .field { margin-bottom: 1.25rem; }
+
+    .label {
+      font-size: 13px;
+      color: #666;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .age-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      accent-color: #1D9E75;
+      height: 4px;
+    }
+
+    .age-display {
+      font-size: 22px;
+      font-weight: 600;
+      color: #1a1a1a;
+      min-width: 32px;
+      text-align: right;
+    }
+
+    .unit { font-size: 13px; color: #888; }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .toggle {
+      position: relative;
+      width: 48px;
+      height: 28px;
+      flex-shrink: 0;
+    }
+
+    .toggle input { opacity: 0; width: 0; height: 0; }
+
+    .slider-toggle {
+      position: absolute;
+      inset: 0;
+      border-radius: 14px;
+      background: #ccc;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .slider-toggle:before {
+      content: '';
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      left: 3px;
+      top: 3px;
+      border-radius: 50%;
+      background: white;
+      transition: transform 0.2s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    }
+
+    input:checked + .slider-toggle { background: #1D9E75; }
+    input:checked + .slider-toggle:before { transform: translateX(20px); }
+
+    .toggle-label { font-size: 15px; color: #1a1a1a; }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: 500;
+      border: none;
+      border-radius: 10px;
+      background: #1a1a1a;
+      color: #fff;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      transition: background 0.15s;
+    }
+
+    .btn:active { background: #333; }
+
+    .result {
+      margin-top: 1.25rem;
+      padding: 1rem;
+      border-radius: 10px;
+      display: none;
+    }
+
+    .result.ok { background: #EAF3DE; border: 1px solid #97C459; }
+    .result.no { background: #FCEBEB; border: 1px solid #F09595; }
+
+    .result-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .result.ok .result-title { color: #3B6D11; }
+    .result.no .result-title { color: #A32D2D; }
+
+    .result-detail { font-size: 13px; }
+    .result.ok .result-detail { color: #639922; }
+    .result.no .result-detail { color: #E24B4A; }
+
+    .code-block {
+      margin-top: 1.25rem;
+      background: #f4f4f0;
+      border-radius: 10px;
+      padding: 0.875rem 1rem;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      color: #555;
+      white-space: pre;
+      overflow-x: auto;
+      line-height: 1.6;
+    }
+
+    .kw { color: #185FA5; font-weight: 600; }
+    .val { color: #1D9E75; font-weight: 600; }
+    .res-ok { color: #3B6D11; font-weight: 600; }
+    .res-no { color: #A32D2D; font-weight: 600; }
+
+    .footer {
+      margin-top: 1.5rem;
+      text-align: center;
+      font-size: 12px;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>¿Puede votar esta persona?</h1>
+
+    <div class="field">
+      <label class="label">Edad</label>
+      <div class="age-row">
+        <input type="range" min="1" max="100" value="20" id="edad">
+        <span class="age-display" id="edad-val">20</span>
+        <span class="unit">años</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="label">Documento de identidad</label>
+      <div class="toggle-row">
+        <label class="toggle">
+          <input type="checkbox" id="cedula" checked>
+          <span class="slider-toggle"></span>
+        </label>
+        <span class="toggle-label" id="cedula-label">Tiene cédula</span>
+      </div>
+    </div>
+
+    <button class="btn" onclick="verificar()">Verificar</button>
+
+    <div class="result" id="resultado">
+      <p class="result-title" id="res-title"></p>
+      <p class="result-detail" id="res-detail"></p>
+    </div>
+
+    <div class="code-block" id="codigo" style="display:none;"></div>
+
+    <p class="footer">Ejercicio Python — operador and</p>
+  </div>
+
+  <script>
+    const edadSlider = document.getElementById('edad');
+    const edadVal = document.getElementById('edad-val');
+    const cedulaCheck = document.getElementById('cedula');
+    const cedulaLabel = document.getElementById('cedula-label');
+
+    edadSlider.addEventListener('input', () => {
+      edadVal.textContent = edadSlider.value;
+    });
+
+    cedulaCheck.addEventListener('change', () => {
+      cedulaLabel.textContent = cedulaCheck.checked ? 'Tiene cédula' : 'No tiene cédula';
+    });
+
+    function verificar() {
+      const edad = parseInt(edadSlider.value);
+      const tieneCedula = cedulaCheck.checked;
+      const puede = edad >= 18 && tieneCedula;
+
+      const res = document.getElementById('resultado');
+      const title = document.getElementById('res-title');
+      const detail = document.getElementById('res-detail');
+      const codigo = document.getElementById('codigo');
+
+      res.style.display = 'block';
+      codigo.style.display = 'block';
+      res.className = 'result ' + (puede ? 'ok' : 'no');
+
+      if (puede) {
+        title.textContent = 'Puede votar';
+        detail.textContent = edad + ' años y tiene cédula — ambas condiciones se cumplen.';
+      } else if (edad < 18 && !tieneCedula) {
+        title.textContent = 'No puede votar';
+        detail.textContent = 'Menor de 18 años y sin cédula — ninguna condición se cumple.';
+      } else if (edad < 18) {
+        title.textContent = 'No puede votar';
+        detail.textContent = 'Solo tiene ' + edad + ' años — debe tener al menos 18.';
+      } else {
+        title.textContent = 'No puede votar';
+        detail.textContent = 'Tiene ' + edad + ' años pero no tiene cédula.';
+      }
+
+      const resultClass = puede ? 'res-ok' : 'res-no';
+      const resultText = puede ? 'Puede votar' : 'No puede votar';
+
+      codigo.innerHTML =
+        '<span class="kw">edad</span> = ' + edad + '\n' +
+        '<span class="kw">tiene_cedula</span> = <span class="val">' + (tieneCedula ? 'True' : 'False') + '</span>\n\n' +
+        'if edad >= 18 <span class="kw">and</span> tiene_cedula:\n' +
+        '    print("Puede votar")\n' +
+        'else:\n' +
+        '    print("No puede votar")\n\n' +
+        '# Resultado: <span class="' + resultClass + '">' + resultText + '</span>';
+    }
+  </script>
+</body>
+</html>
